@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.OneHotEncoder","timestamp":1714973205143,"sparkVersion":"3.5.1","uid":"OneHotEncoder_be05aeb7998f","paramMap":{"outputCol":"first_segmentsAirlineName_onehot","inputCol":"first_segmentsAirlineName_index"},"defaultParamMap":{"dropLast":true,"handleInvalid":"error","outputCol":"OneHotEncoder_be05aeb7998f__output"}}

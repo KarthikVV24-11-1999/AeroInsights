@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.OneHotEncoderModel","timestamp":1714976179902,"sparkVersion":"3.5.1","uid":"OneHotEncoder_fb981429a324","paramMap":{"outputCol":"searchWeek_onehot","inputCol":"searchWeek_index"},"defaultParamMap":{"handleInvalid":"error","dropLast":true,"outputCol":"OneHotEncoder_fb981429a324__output"}}
