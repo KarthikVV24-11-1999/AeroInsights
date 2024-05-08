@@ -1,1 +1,0 @@
-{"class":"org.apache.spark.ml.feature.OneHotEncoderModel","timestamp":1715135022553,"sparkVersion":"3.5.1","uid":"OneHotEncoder_1be00921660d","paramMap":{"inputCol":"FlightWeek_index","outputCol":"FlightWeek_onehot"},"defaultParamMap":{"outputCol":"OneHotEncoder_1be00921660d__output","dropLast":true,"handleInvalid":"error"}}

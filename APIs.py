@@ -168,7 +168,8 @@ def predict_delays(data):
         "NASDelay":0.0,
         "SecurityDelay":0.0,
         "LateAircraftDelay":0.0,
-        "Distance":368.0
+        "Distance":368.0,
+        "Operating_Airline": "DL"
     }
 
     try:
@@ -187,6 +188,7 @@ def predict_delays(data):
         "Dest",
         "arrDaypart",
         "depDaypart",
+        "Operating_Airline"
     ]
 
     # Drop the specified columns
