@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.OneHotEncoderModel","timestamp":1715135022851,"sparkVersion":"3.5.1","uid":"OneHotEncoder_eb0eeac01e7a","paramMap":{"outputCol":"depDaypart_onehot","inputCol":"depDaypart_index"},"defaultParamMap":{"dropLast":true,"handleInvalid":"error","outputCol":"OneHotEncoder_eb0eeac01e7a__output"}}

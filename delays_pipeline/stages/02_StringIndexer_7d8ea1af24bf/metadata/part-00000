@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.StringIndexerModel","timestamp":1715135021888,"sparkVersion":"3.5.1","uid":"StringIndexer_7d8ea1af24bf","paramMap":{"inputCol":"FlightWeek","handleInvalid":"keep","outputCol":"FlightWeek_index"},"defaultParamMap":{"stringOrderType":"frequencyDesc","handleInvalid":"error","outputCol":"StringIndexer_7d8ea1af24bf__output"}}
