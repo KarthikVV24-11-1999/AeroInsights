@@ -166,6 +166,72 @@ LATE_AIRCRAFT_DELAY = {
     'VX': 2.859430295295005, 
 }
 
+CANCELLATION_RATES = {
+    'UA': 1.9987360577743913, 
+    'NK': 2.1692518411749098, 
+    'EV': 4.0611419151805785, 
+    'B6': 2.6304631043533058, 
+    'DL': 1.418366532449831, 
+    '9K': 0.12040939193257075, 
+    'OO': 2.297287417756781, 
+    'F9': 2.4068633294299957, 
+    'YV': 3.4394620509973093, 
+    'C5': 4.231911031809512, 
+    'EM': 5.592076809964536, 
+    'HA': 1.012285138778951, 
+    'G4': 4.5788720882713525, 
+    'ZW': 3.706450781426715, 
+    'CP': 1.2814143304190728, 
+    'YX': 3.1884297314645744, 
+    'AS': 1.888753656515411, 
+    'QX': 2.3393674666191235, 
+    'G7': 3.341941364119702, 
+    'VX': 2.4504810413129596, 
+    'WN': 3.1311177477317353, 
+    'AX': 4.093075066526394, 
+    '9E': 2.0228926573594705, 
+    'AA': 3.0330073829407134, 
+    'MQ': 3.36723907462681, 
+    'OH': 3.3215979607613715, 
+    'KS': 15.486884656845131, 
+    'PT': 3.949123876625911, 
+}
+
+DIVERSION_RATES = {
+    'UA': 0.25945641990063445, 
+    'NK': 0.18943604232849764, 
+    'EV': 0.30254277304485266, 
+    'B6': 0.3186029207678656, 
+    'DL': 0.18337335963242776, 
+    '9K': 0.2408187838651415, 
+    'OO': 0.31009439871025035, 
+    'F9': 0.13936317166036757, 
+    'YV': 0.25092897108444023, 
+    'C5': 0.3130191349289362, 
+    'EM': 0.45411296600640083, 
+    'HA': 0.08945177005103255, 
+    'G4': 0.2876992235390274, 
+    'ZW': 0.2151487893277784, 
+    'CP': 0.1496919056682905, 
+    'YX': 0.22933635791428553, 
+    'AS': 0.24617686555388693, 
+    'QX': 0.23431878816435425, 
+    'G7': 0.23871009743712157, 
+    'VX': 0.4753820033955857, 
+    'WN': 0.18888125123416727, 
+    'AX': 0.36945355529426327, 
+    '9E': 0.17701437753450128, 
+    'AA': 0.24836341463959385, 
+    'MQ': 0.24944583129035083, 
+    'OH': 0.2588746578633961, 
+    'KS': 2.1200143729787997, 
+    'PT': 0.2966753483958358, 
+}
+
+loaded_pipeline = PipelineModel.load(PRICES_PIPELINE_PATH)
+loaded_pipeline_2 = PipelineModel.load(DELAYS_PIPELINE_PATH)
+loaded_model_2 = LinearRegressionModel.load(DELAYS_MODEL_PATH)
+loaded_model = LinearRegressionModel.load(PRICES_MODEL_PATH)
 
 def getAirportObjectsFromJSON():
     with open('airportCodeToNameMapping.json', 'r') as file:
@@ -175,12 +241,12 @@ def getAirportObjectsFromJSON():
     return sorted_objects
 
 def buildDataLists(userData):
-    data_list = []
+    data_list = {}
     data_2_list = []
     origin, destination, departureDayParts, arrivalDayParts, date, searchDate = userData.values()
 
     flightWeek = datetime.fromisoformat(date.split('.')[0]).isocalendar()[1]
-    searchWeek = datetime.fromisoformat(searchDate.split('.')[0]).isocalendar()[1]
+    userSearchWeek = datetime.fromisoformat(searchDate.split('.')[0]).isocalendar()[1]
  
     departureDayParts = [dayPart['id'] for dayPart in departureDayParts if dayPart['checked']]
     arrivalDayParts = [dayPart['id'] for dayPart in arrivalDayParts if dayPart['checked']]  
@@ -210,21 +276,31 @@ def buildDataLists(userData):
         securityDelays = json.load(file)
     securityDelay = securityDelays.get(origin['code'], 0.0)
 
+    with open('timeDuration.json', 'r') as file:
+        timeDurations = json.load(file)
+    orig_dest = origin['code'] + '_' + destination['code']
+    travelDurationMinutes = timeDurations.get(orig_dest, 0.0)
+
     for airline in AIRLINES:
         for departureDayPart in departureDayParts:  
             for arrivalDayPart in arrivalDayParts:  
-                data = {
-                    "startingAirport": origin['code'],
-                    "destinationAirport": destination['code'],
-                    "first_segmentsAirlineName": airline,
-                    "searchWeek": searchWeek,
-                    "flightWeek": flightWeek,
-                    "segmentsDepartureDaypart": departureDayPart,
-                    "segmentArrivalDaypart": arrivalDayPart,
-                    "totalTravelDistance": totalTravelDistance,
-                    "travelDurationMinutes": 124,
-                }
-                data_list.append(data)
+                for searchWeek in range(userSearchWeek, flightWeek + 1):
+                    data = {
+                        "startingAirport": origin['code'],
+                        "destinationAirport": destination['code'],
+                        "first_segmentsAirlineName": airline,
+                        "searchWeek": searchWeek,
+                        "flightWeek": flightWeek,
+                        "segmentsDepartureDaypart": departureDayPart,
+                        "segmentArrivalDaypart": arrivalDayPart,
+                        "totalTravelDistance": totalTravelDistance,
+                        "travelDurationMinutes": travelDurationMinutes,
+                    }
+                    if searchWeek in data_list:
+                        data_list[searchWeek].append(data)
+                    else:
+                        data_list[searchWeek] = [data]                    
+                    print(searchWeek, data)
 
                 airline_code = ALL_AIRLINES_WITH_CODES[airline]
                 data_2 = {
@@ -248,18 +324,6 @@ def buildDataLists(userData):
 
 def predict_prices(data):
     try:
-        loaded_pipeline = PipelineModel.load(PRICES_PIPELINE_PATH)
-    except Exception as e:
-        print(e, "load failed")
-
-    # Load the trained model
-    try:
-        loaded_model = LinearRegressionModel.load(PRICES_MODEL_PATH)
-        a = vector
-    except Exception as e:
-        print(e, "model failed")
-
-    try:
         data_df = spark.createDataFrame(pd.DataFrame(data))
         # Transform input data using the loaded pipeline
         transformed_data = loaded_pipeline.transform(data_df)
@@ -281,13 +345,6 @@ def predict_prices(data):
 
     # Drop the specified columns
     transformed_data = transformed_data.drop(*columns_to_drop)
-    
-
-    # Add a new column "totalTravelDistance" with a constant value of 100
-    # transformed_data = transformed_data.withColumn("totalTravelDistance", lit(1844))
-
-    # # Add another new column "travelDurationMinutes" with a constant value of 100
-    # transformed_data = transformed_data.withColumn("travelDurationMinutes", lit(740))
 
     testAssembler = VectorAssembler(inputCols=transformed_data.columns,
                                     outputCol="features")
@@ -301,7 +358,6 @@ def predict_prices(data):
     # Extract prediction results
     try:
         results = predictions.select('prediction', 'first_segmentsAirlineName_index').collect()  
-        # print(results)
     except Exception as e:
         print(e, "prediation failed")
     # Convert results to JSON
@@ -314,21 +370,23 @@ def predict_prices(data):
     return min_price_predictions
 
 
+def random_func(prices):
+    random.seed(prices)
+    return random.uniform(-1,1)
+
+def get_min_price(prediction_list):
+    min_price = float('inf')  # Initialize min_price to positive infinity
+    min_price_prediction = None
+    
+    for prediction in prediction_list:
+        price = prediction['price']
+        if price is not None and price < min_price:
+            min_price = price
+            min_price_prediction = prediction
+            
+    return min_price_prediction
+
 def predict_delays(data):
-    try:
-        loaded_pipeline_2 = PipelineModel.load(DELAYS_PIPELINE_PATH)
-    except Exception as e:
-        print(e, "load failed")
-    # Load the trained model
-
-    try:
-        loaded_model_2 = LinearRegressionModel.load(DELAYS_MODEL_PATH)
-        a = vector
-
-    except Exception as e:
-        print(e, "model failed")    
-
-
     try:
         data_df_2 = spark.createDataFrame(pd.DataFrame(data))
         # Transform input data using the loaded pipeline
@@ -365,24 +423,24 @@ def predict_delays(data):
     print(testOutput_2.printSchema())
     predictions_2 = loaded_model_2.transform(testOutput_2)
     print(predictions_2.printSchema())
-    print(predictions_2.select('prediction', 'Operating_Airline_index', 'depDaypart_index', 'arrDayPart_index').toPandas())
+    print(predictions_2.select('prediction', 'Operating_Airline_index', 'depDaypart_index').toPandas())
     
     # Extract prediction results
     try:
-        results_2 = predictions_2.select('prediction', 'Operating_Airline_index', 'depDaypart_index', 'arrDayPart_index').collect()
+        results_2 = predictions_2.select('prediction', 'Operating_Airline_index', 'depDaypart_index').collect()
         print(results_2)
     except Exception as e:
         print(e, "prediation failed")
     # Convert results to JSON
-    delay_prediction_2 = [{'delay': (row.prediction % 25)  * random.uniform(-1, 1), 
+    delay_prediction_2 = [{'delay': (row.prediction % 25)  * random_func(row.prediction), 
                            'airline': list(ALL_AIRLINES_WITH_CODES.keys())[int(row.Operating_Airline_index)]} 
                            for row in results_2]
-    # res = (delay_prediction_2 % 25)  * random.uniform(-1, 1)
-    return delay_prediction_2
-# 480.995284
+    
+    delay_prediction_2.sort(key=lambda x: x["airline"])
+    stacked_delay_predictions = {airline: list(group) for airline, group in groupby(delay_prediction_2, key=lambda x: x["airline"])}
+    min_delay_predictions = [{'airline': airline, 'delay': min(item["delay"] for item in group)} for airline, group in stacked_delay_predictions.items()]
 
-
-
+    return min_delay_predictions
 
 
 @app.route('/getAirportObjects', methods=["GET"])
@@ -395,15 +453,31 @@ def getAirportObjects():
 def getDelaysAndPrices():
     userData = request.get_json()
     pricesDataList, delaysDataList = buildDataLists(userData).values()
-    predictedPrices = predict_prices(pricesDataList)
+
+    predictedPrices = []
+
+    # Dictionary to store the minimum price prediction for each airline
+    min_price_predictions = {}
+
+    # Iterate over each search week
+    for searchWeek, data in pricesDataList.items():
+        price_predictions = predict_prices(data)
+        
+        # Update the minimum price prediction for each airline
+        for prediction in price_predictions:
+            airline = prediction['airline']
+            price = prediction['price']
+            
+            # If the airline is not in min_price_predictions or the new price is lower, update the minimum price prediction
+            if airline not in min_price_predictions or price < min_price_predictions[airline]['price']:
+                min_price_predictions[airline] = {'airline': airline, 'search_week': searchWeek, 'price': price, 'cancellation_rate': CANCELLATION_RATES.get(ALL_AIRLINES_WITH_CODES[airline], None), 'diversion_rate': DIVERSION_RATES.get(ALL_AIRLINES_WITH_CODES[airline], None)}
+
+    # Create a new list containing only the minimum price predictions
+    predictedPrices = list(min_price_predictions.values())
+
+
     predictedDelays = predict_delays(delaysDataList)
     return {"prices": predictedPrices, "delays": predictedDelays}
-
-    #     return {
-    #         "delays": delays,
-    #         "prices": prices
-    #     }
-
 
 if __name__ == "__main__":
     # To run the Flask app
