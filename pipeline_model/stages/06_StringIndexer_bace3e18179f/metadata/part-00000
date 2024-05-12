@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.StringIndexer","timestamp":1714973204880,"sparkVersion":"3.5.1","uid":"StringIndexer_bace3e18179f","paramMap":{"handleInvalid":"keep","outputCol":"segmentArrivalDaypart_index","inputCol":"segmentArrivalDaypart"},"defaultParamMap":{"handleInvalid":"error","outputCol":"StringIndexer_bace3e18179f__output","stringOrderType":"frequencyDesc"}}
