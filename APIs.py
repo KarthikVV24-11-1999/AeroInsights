@@ -432,7 +432,7 @@ def predict_delays(data):
     except Exception as e:
         print(e, "prediation failed")
     # Convert results to JSON
-    delay_prediction_2 = [{'delay': (row.prediction % 25)  * random_func(row.prediction), 
+    delay_prediction_2 = [{'delay': (row.prediction), 
                            'airline': list(ALL_AIRLINES_WITH_CODES.keys())[int(row.Operating_Airline_index)]} 
                            for row in results_2]
     
